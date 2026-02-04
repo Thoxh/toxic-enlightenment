@@ -1,0 +1,51 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum PurchaseStatus {
+  PAID
+  PENDING
+  FAILED
+  EXPIRED
+}
+
+model StripeEvent {
+  id        String   @id
+  type      String
+  createdAt DateTime @default(now())
+}
+
+model Purchase {
+  id                    String          @id @default(cuid())
+  stripeSessionId       String          @unique
+  stripePaymentIntentId String?         @unique
+  stripeCustomerId      String?
+  customerEmail         String?
+  customerName          String?
+  currency              String?
+  amountTotal           Int?
+  status                PurchaseStatus  @default(PAID)
+  lineItems             Json?
+  rawSession            Json?
+  tickets               Ticket[]
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+}
+
+model Ticket {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  quantity        Int       @default(1)
+  redeemedCount   Int       @default(0)
+  firstRedeemedAt DateTime?
+  lastRedeemedAt  DateTime?
+  sentAt          DateTime?
+  purchaseId      String
+  purchase        Purchase  @relation(fields: [purchaseId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
