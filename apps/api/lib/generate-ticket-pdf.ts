@@ -208,7 +208,7 @@ export async function generateTicketPdf(ticket: TicketPdfData): Promise<Blob> {
     "Ticket gültig für einmaligen Eintritt · Kein Wiedereinlass",
     "Einlass ab 18 Jahren · Ausweispflicht",
     "Keine Rückerstattung · Ticket ist nicht übertragbar",
-    "Bei Fragen: info@soundkiosk.me",
+    "Bei Fragen: info@soundkiosk.one",
   ]
 
   let currentY = infoY
