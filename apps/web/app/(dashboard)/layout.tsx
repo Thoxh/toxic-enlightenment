@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
-import { Ticket, ScanLine, LogOut } from "lucide-react"
+import { Ticket, ScanLine, LogOut, PlusCircle } from "lucide-react"
 
 import {
   Sidebar,
@@ -59,6 +59,11 @@ const operationsItems = [
     title: "Scanner",
     href: "/scanner",
     icon: ScanLine,
+  },
+  {
+    title: "Erstellen",
+    href: "/create",
+    icon: PlusCircle,
   },
 ]
 

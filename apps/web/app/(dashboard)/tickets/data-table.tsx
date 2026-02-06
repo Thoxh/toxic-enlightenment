@@ -40,6 +40,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import { TooltipProvider } from "@workspace/ui/components/tooltip"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -94,7 +95,8 @@ export function DataTable<TData, TValue>({
   }, [statusFilter, table])
 
   return (
-    <div className="w-full space-y-4">
+    <TooltipProvider>
+      <div className="w-full space-y-4">
       {/* Filter Row - Similar to reference design */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Search Input */}
@@ -257,6 +259,7 @@ export function DataTable<TData, TValue>({
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </TooltipProvider>
   )
 }

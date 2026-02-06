@@ -70,7 +70,7 @@ export default function LoginPage() {
             </CardTitle>
             <CardDescription className="mt-2">
               Admin Dashboard — Melde dich an, um Tickets zu verwalten.
-            </CardDescription>
+          </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -81,16 +81,16 @@ export default function LoginPage() {
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
+              <Input
+                id="email"
+                type="email"
                   placeholder="admin@example.com"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                   className="pl-10"
-                  required
-                />
+                required
+              />
               </div>
             </div>
             <div className="space-y-2">
@@ -99,16 +99,16 @@ export default function LoginPage() {
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
+              <Input
+                id="password"
+                type="password"
                   placeholder="••••••••"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
                   className="pl-10"
-                  required
-                />
+                required
+              />
               </div>
             </div>
             <Button

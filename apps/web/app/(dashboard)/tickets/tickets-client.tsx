@@ -131,11 +131,11 @@ export function TicketsClient({ initialData }: TicketsClientProps) {
           trendPercentage={redemptionRate > 0 ? redemptionRate : undefined}
         />
         <Card className="border-border/50">
-          <CardHeader className="pb-2">
+            <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Umsatz
-            </CardTitle>
-          </CardHeader>
+                Umsatz
+              </CardTitle>
+            </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-semibold tracking-tight">
@@ -144,25 +144,25 @@ export function TicketsClient({ initialData }: TicketsClientProps) {
                   currency: "EUR",
                 }).format(totalRevenue / 100)}
               </span>
-            </div>
+              </div>
             <SegmentedProgress value={totalQuantity} maxValue={MAX_TICKETS} color="bg-blue-500" />
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
       <Card className="border-border/50">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-medium">Alle Tickets</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={data}
-            onRefresh={handleRefresh}
-            isRefreshing={isRefreshing}
-          />
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            <DataTable
+              columns={columns}
+              data={data}
+              onRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+            />
+          </CardContent>
+        </Card>
     </div>
   )
 }

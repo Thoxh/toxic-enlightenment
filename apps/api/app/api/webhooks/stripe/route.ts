@@ -3,10 +3,9 @@ import type Stripe from "stripe"
 import { prisma } from "@/lib/prisma"
 import { stripe } from "@/lib/stripe"
 import { generateTicketCode } from "@/lib/tickets"
+import { sendTicketEmail } from "@/lib/send-ticket-email"
 
 export const runtime = "nodejs"
-
-const MAX_TICKET_CODE_RETRIES = 5
 
 function isUniqueConstraintError(error: unknown) {
   return (
@@ -20,27 +19,25 @@ async function createTicketWithUniqueCode(
   purchaseId: string,
   quantity: number,
 ) {
-  for (let attempt = 0; attempt < MAX_TICKET_CODE_RETRIES; attempt += 1) {
-    const code = generateTicketCode()
+  // Generate sequential three-digit ticket code
+  const code = await generateTicketCode(tx)
 
-    try {
-      return await tx.ticket.create({
-        data: {
-          code,
-          quantity,
-          purchaseId,
-        },
-      })
-    } catch (error) {
-      if (isUniqueConstraintError(error)) {
-        continue
-      }
-
-      throw error
+  try {
+    return await tx.ticket.create({
+      data: {
+        code,
+        quantity,
+        purchaseId,
+      },
+    })
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      // If code already exists (shouldn't happen with sequential codes, but handle it)
+      throw new Error("Unable to generate a unique ticket code")
     }
-  }
 
-  throw new Error("Unable to generate a unique ticket code")
+    throw error
+  }
 }
 
 function getSessionString(value: string | Stripe.StripeObject | null | undefined) {
@@ -93,15 +90,19 @@ async function handleSuccessfulCheckout(session: Stripe.Checkout.Session) {
   )
 
   const rawSession = JSON.parse(JSON.stringify(session))
+  const customerEmail = getCustomerEmail(session)
+  const customerName = getCustomerName(session)
 
-  await prisma.$transaction(async (tx) => {
+  // Create purchase and ticket in transaction
+  const result = await prisma.$transaction(async (tx) => {
     const existingPurchase = await tx.purchase.findUnique({
       where: { stripeSessionId: session.id },
       select: { id: true },
     })
 
     if (existingPurchase) {
-      return
+      // Already processed - return null to skip email
+      return null
     }
 
     const purchase = await tx.purchase.create({
@@ -109,8 +110,8 @@ async function handleSuccessfulCheckout(session: Stripe.Checkout.Session) {
         stripeSessionId: session.id,
         stripePaymentIntentId: getSessionString(session.payment_intent),
         stripeCustomerId: getSessionString(session.customer),
-        customerEmail: getCustomerEmail(session),
-        customerName: getCustomerName(session),
+        customerEmail,
+        customerName,
         currency: session.currency ?? null,
         amountTotal: session.amount_total ?? null,
         status: "PAID",
@@ -119,8 +120,49 @@ async function handleSuccessfulCheckout(session: Stripe.Checkout.Session) {
       },
     })
 
-    await createTicketWithUniqueCode(tx, purchase.id, totalQuantity)
+    const ticket = await createTicketWithUniqueCode(tx, purchase.id, totalQuantity)
+
+    return { purchase, ticket }
   })
+
+  // If purchase was already processed, skip email
+  if (!result) {
+    console.log(`[Webhook] Purchase already exists for session ${session.id}`)
+    return
+  }
+
+  const { ticket } = result
+
+  // Send ticket email (outside transaction to not block on email delivery)
+  if (customerEmail) {
+    console.log(`[Webhook] Sending ticket ${ticket.code} to ${customerEmail}`)
+    
+    try {
+      const emailResult = await sendTicketEmail({
+        to: customerEmail,
+        customerName,
+        ticketCode: ticket.code,
+        quantity: ticket.quantity,
+      })
+
+      if (emailResult.success) {
+        // Update ticket with sentAt timestamp
+        await prisma.ticket.update({
+          where: { id: ticket.id },
+          data: { sentAt: new Date() },
+        })
+        console.log(`[Webhook] Ticket ${ticket.code} sent successfully`)
+      } else {
+        console.error(`[Webhook] Failed to send ticket ${ticket.code}:`, emailResult.error)
+        // Don't throw - the purchase is still valid, just email failed
+      }
+    } catch (emailError) {
+      console.error(`[Webhook] Email error for ticket ${ticket.code}:`, emailError)
+      // Don't throw - the purchase is still valid, just email failed
+    }
+  } else {
+    console.warn(`[Webhook] No email for ticket ${ticket.code} - customer has no email`)
+  }
 }
 
 export async function POST(request: Request) {

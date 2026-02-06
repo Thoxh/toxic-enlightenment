@@ -57,11 +57,40 @@ async function handleDownloadTicket(code: string) {
   }
 }
 
-function handleSendTicket(code: string) {
-  // Placeholder - wird später implementiert
-  toast.info("Ticket verschicken wird bald verfügbar sein", {
+async function handleSendTicket(code: string) {
+  const loadingToast = toast.loading("Ticket wird gesendet...", {
     description: `Ticket: ${code}`,
   })
+
+  try {
+    const response = await fetch("/api/tickets/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code }),
+    })
+
+    const result = await response.json()
+
+    toast.dismiss(loadingToast)
+
+    if (result.success) {
+      toast.success("Ticket erfolgreich gesendet!", {
+        description: `An: ${result.email}`,
+      })
+      // Refresh the page to update the sentAt status
+      window.location.reload()
+    } else {
+      toast.error("Fehler beim Senden", {
+        description: result.error || "Unbekannter Fehler",
+      })
+    }
+  } catch (error) {
+    toast.dismiss(loadingToast)
+    console.error("Send error:", error)
+    toast.error("Verbindungsfehler beim Senden")
+  }
 }
 
 export const columns: ColumnDef<TicketRow>[] = [

@@ -7,15 +7,15 @@ import { ThemeProvider as NextThemesProvider } from "next-themes"
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <NextThemesProvider
-        attribute="class"
+    <NextThemesProvider
+      attribute="class"
         defaultTheme="dark"
-        enableSystem
-        disableTransitionOnChange
-        enableColorScheme
-      >
-        {children}
-      </NextThemesProvider>
+      enableSystem
+      disableTransitionOnChange
+      enableColorScheme
+    >
+      {children}
+    </NextThemesProvider>
     </SessionProvider>
   )
 }

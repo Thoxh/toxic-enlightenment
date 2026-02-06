@@ -241,28 +241,49 @@ export function ScannerClient() {
         })
       }
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        videoRef.current.setAttribute("playsinline", "true")
-        videoRef.current.setAttribute("webkit-playsinline", "true")
-        videoRef.current.muted = true
-
-        await new Promise<void>((resolve, reject) => {
-          const video = videoRef.current!
-          video.onloadedmetadata = () => {
-            video
-              .play()
-              .then(() => resolve())
-              .catch(reject)
-          }
-          video.onerror = () => reject(new Error("Video loading failed"))
-          setTimeout(() => resolve(), 3000)
-        })
-      }
-
       streamRef.current = stream
       setCameraActive(true)
       setCameraPermission("granted")
+
+      // Wait for next render cycle before setting video source
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      if (videoRef.current) {
+        const video = videoRef.current
+        video.srcObject = stream
+        video.setAttribute("playsinline", "true")
+        video.setAttribute("webkit-playsinline", "true")
+        video.muted = true
+
+        // Wait for video to be ready
+        await new Promise<void>((resolve, reject) => {
+          const onLoadedMetadata = () => {
+            video.removeEventListener("loadedmetadata", onLoadedMetadata)
+            video
+              .play()
+              .then(() => {
+                console.log("Video playing, dimensions:", video.videoWidth, "x", video.videoHeight)
+                resolve()
+              })
+              .catch((err) => {
+                console.error("Video play failed:", err)
+                reject(err)
+              })
+          }
+          
+          video.addEventListener("loadedmetadata", onLoadedMetadata)
+          video.onerror = () => reject(new Error("Video loading failed"))
+          
+          // Fallback timeout
+          setTimeout(() => {
+            video.removeEventListener("loadedmetadata", onLoadedMetadata)
+            // Try to play anyway
+            video.play().catch(() => {})
+            resolve()
+          }, 3000)
+        })
+      }
+
       setScanState("scanning")
       startScanning()
 
@@ -587,7 +608,11 @@ export function ScannerClient() {
                     webkit-playsinline="true"
                     muted
                     autoPlay
-                    style={{ transform: "scaleX(1)" }}
+                    onLoadedData={(e) => {
+                      const video = e.currentTarget
+                      console.log("Video loaded, playing...")
+                      video.play().catch(console.error)
+                    }}
                   />
                   <canvas ref={canvasRef} className="hidden" />
                   {/* Scan overlay */}

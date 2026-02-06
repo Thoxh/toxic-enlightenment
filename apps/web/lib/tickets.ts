@@ -5,7 +5,7 @@ export type TicketRow = {
   redeemedCount: number
   firstRedeemedAt: string | null
   lastRedeemedAt: string | null
-  sentAt: string | null
+  sentAt?: string | null  // Optional until migration is applied
   createdAt: string
   purchase: {
     stripeSessionId: string
