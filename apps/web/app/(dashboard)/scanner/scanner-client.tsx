@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import jsQR from "jsqr"
 import {
   Camera,
   CameraOff,
@@ -387,6 +388,7 @@ export function ScannerClient() {
     canvas.height = video.videoHeight
     ctx.drawImage(video, 0, 0)
 
+    // Try native BarcodeDetector first (Chrome, Edge, Android)
     if ("BarcodeDetector" in window) {
       try {
         // @ts-expect-error - BarcodeDetector is not in TypeScript types yet
@@ -399,11 +401,26 @@ export function ScannerClient() {
           const code = barcodes[0].rawValue
           if (code) {
             handleCodeDetected(code)
+            return
           }
         }
       } catch (err) {
         console.debug("BarcodeDetector error:", err)
       }
+    }
+
+    // Fallback to jsQR for iOS Safari and other browsers without BarcodeDetector
+    try {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert",
+      })
+
+      if (qrCode && qrCode.data) {
+        handleCodeDetected(qrCode.data)
+      }
+    } catch (err) {
+      console.debug("jsQR error:", err)
     }
   }
 
