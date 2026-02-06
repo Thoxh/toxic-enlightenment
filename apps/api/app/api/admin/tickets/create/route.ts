@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { generateTicketCode } from "@/lib/tickets"
+import { Prisma } from "@prisma/client"
 import crypto from "crypto"
 
 export const runtime = "nodejs"
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
         amountTotal: body.amountTotal || 0,
         currency: body.currency || "EUR",
         status: "PAID",
-        lineItems: body.notes ? { notes: body.notes } : null,
+        lineItems: body.notes ? { notes: body.notes } : Prisma.JsonNull,
         tickets: {
           create: {
             code: ticketCode,
