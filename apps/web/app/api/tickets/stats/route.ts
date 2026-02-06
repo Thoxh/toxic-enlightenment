@@ -5,7 +5,7 @@ export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:5000"
-const API_ADMIN_KEY = process.env.API_ADMIN_KEY
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -20,7 +20,7 @@ export async function GET() {
       {
         method: "GET",
         headers: {
-          ...(API_ADMIN_KEY ? { "x-admin-key": API_ADMIN_KEY } : {}),
+          ...(ADMIN_API_KEY ? { "x-admin-key": ADMIN_API_KEY } : {}),
         },
       }
     )

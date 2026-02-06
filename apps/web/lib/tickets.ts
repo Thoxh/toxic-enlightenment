@@ -51,7 +51,7 @@ export type TicketRedeemResult = {
 
 function getApiConfig() {
   const baseUrl = process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000"
-  const adminKey = process.env.API_ADMIN_KEY ?? process.env.NEXT_PUBLIC_API_ADMIN_KEY
+  const adminKey = process.env.ADMIN_API_KEY ?? process.env.NEXT_PUBLIC_ADMIN_API_KEY
   return { baseUrl: baseUrl.replace(/\/$/, ""), adminKey }
 }
 
