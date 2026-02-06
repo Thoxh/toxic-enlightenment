@@ -6,8 +6,10 @@ import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Ensure Prisma CLI can resolve DATABASE_URL from apps/api/.env
-config({ path: resolve(__dirname, ".env") })
+// Load local .env file for development (Railway sets ENV vars directly)
+if (!process.env.DATABASE_URL) {
+  config({ path: resolve(__dirname, ".env") })
+}
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
