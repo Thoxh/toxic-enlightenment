@@ -1,17 +1,11 @@
 import { prisma } from "@/lib/prisma"
 import { generateTicketCode } from "@/lib/tickets"
+import { validateAdminRequest, unauthorizedResponse, handleCorsPreflightResponse } from "@/lib/auth"
 import { Prisma } from "@prisma/client"
 import crypto from "crypto"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
-
-function isAuthorized(request: Request) {
-  const adminKey = process.env.ADMIN_API_KEY
-  if (!adminKey) return true
-  const provided = request.headers.get("x-admin-key")
-  return provided === adminKey
-}
 
 interface CreateTicketBody {
   customerEmail: string
@@ -22,9 +16,14 @@ interface CreateTicketBody {
   notes?: string
 }
 
+export async function OPTIONS(request: Request) {
+  return handleCorsPreflightResponse(request)
+}
+
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
-    return new Response("Unauthorized", { status: 401 })
+  const auth = validateAdminRequest(request)
+  if (!auth.authorized) {
+    return unauthorizedResponse(auth.error!, auth.corsHeaders)
   }
 
   try {
@@ -34,14 +33,14 @@ export async function POST(request: Request) {
     if (!body.customerEmail || !body.quantity) {
       return new Response(
         JSON.stringify({ error: "customerEmail and quantity are required" }),
-        { status: 400, headers: { "content-type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json", ...auth.corsHeaders } }
       )
     }
 
     if (body.quantity < 1 || body.quantity > 10) {
       return new Response(
         JSON.stringify({ error: "quantity must be between 1 and 10" }),
-        { status: 400, headers: { "content-type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json", ...auth.corsHeaders } }
       )
     }
 
@@ -78,9 +77,9 @@ export async function POST(request: Request) {
       JSON.stringify({
         success: true,
         ticket: {
-          id: ticket.id,
-          code: ticket.code,
-          quantity: ticket.quantity,
+          id: ticket?.id,
+          code: ticket?.code,
+          quantity: ticket?.quantity,
           customerEmail: purchase.customerEmail,
           customerName: purchase.customerName,
         },
@@ -89,13 +88,13 @@ export async function POST(request: Request) {
           stripeSessionId: purchase.stripeSessionId,
         },
       }),
-      { status: 201, headers: { "content-type": "application/json" } }
+      { status: 201, headers: { "Content-Type": "application/json", ...auth.corsHeaders } }
     )
   } catch (error) {
     console.error("Failed to create ticket", error)
     return new Response(
       JSON.stringify({ error: "Failed to create ticket" }),
-      { status: 500, headers: { "content-type": "application/json" } }
+      { status: 500, headers: { "Content-Type": "application/json", ...auth.corsHeaders } }
     )
   }
 }

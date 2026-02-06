@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { validateAdminRequest, unauthorizedResponse, handleCorsPreflightResponse } from "@/lib/auth"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -12,16 +13,14 @@ function parseLimit(value: string | null) {
   return Math.min(parsed, MAX_LIMIT)
 }
 
-function isAuthorized(request: Request) {
-  const adminKey = process.env.ADMIN_API_KEY
-  if (!adminKey) return true
-  const provided = request.headers.get("x-admin-key")
-  return provided === adminKey
+export async function OPTIONS(request: Request) {
+  return handleCorsPreflightResponse(request)
 }
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
-    return new Response("Unauthorized", { status: 401 })
+  const auth = validateAdminRequest(request)
+  if (!auth.authorized) {
+    return unauthorizedResponse(auth.error!, auth.corsHeaders)
   }
 
   const { searchParams } = new URL(request.url)
@@ -52,10 +51,13 @@ export async function GET(request: Request) {
 
     return new Response(JSON.stringify({ data: tickets, nextCursor }), {
       status: 200,
-      headers: { "content-type": "application/json" },
+      headers: { "Content-Type": "application/json", ...auth.corsHeaders },
     })
   } catch (error) {
     console.error("Failed to load tickets", error)
-    return new Response("Failed to load tickets", { status: 500 })
+    return new Response(JSON.stringify({ error: "Failed to load tickets" }), { 
+      status: 500,
+      headers: { "Content-Type": "application/json", ...auth.corsHeaders },
+    })
   }
 }

@@ -1,18 +1,17 @@
 import { prisma } from "@/lib/prisma"
+import { validateAdminRequest, unauthorizedResponse, handleCorsPreflightResponse } from "@/lib/auth"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-function isAuthorized(request: Request) {
-  const adminKey = process.env.ADMIN_API_KEY
-  if (!adminKey) return true
-  const provided = request.headers.get("x-admin-key")
-  return provided === adminKey
+export async function OPTIONS(request: Request) {
+  return handleCorsPreflightResponse(request)
 }
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
-    return new Response("Unauthorized", { status: 401 })
+  const auth = validateAdminRequest(request)
+  if (!auth.authorized) {
+    return unauthorizedResponse(auth.error!, auth.corsHeaders)
   }
 
   try {
@@ -34,7 +33,7 @@ export async function GET(request: Request) {
     const totalRedeemed = tickets.reduce((sum, t) => sum + t.redeemedCount, 0)
     const totalRemaining = totalQuantity - totalRedeemed
 
-    return Response.json({
+    return new Response(JSON.stringify({
       totalTickets,
       totalQuantity,
       totalRedeemed,
@@ -43,12 +42,15 @@ export async function GET(request: Request) {
         totalQuantity > 0
           ? Math.round((totalRedeemed / totalQuantity) * 100)
           : 0,
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...auth.corsHeaders },
     })
   } catch (error) {
     console.error("Failed to load stats", error)
-    return Response.json(
-      { error: "Failed to load stats" },
-      { status: 500 }
-    )
+    return new Response(JSON.stringify({ error: "Failed to load stats" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...auth.corsHeaders },
+    })
   }
 }

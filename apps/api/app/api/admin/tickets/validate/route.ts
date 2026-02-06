@@ -1,28 +1,27 @@
 import { prisma } from "@/lib/prisma"
+import { validateAdminRequest, unauthorizedResponse, handleCorsPreflightResponse } from "@/lib/auth"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-function isAuthorized(request: Request) {
-  const adminKey = process.env.ADMIN_API_KEY
-  if (!adminKey) return true
-  const provided = request.headers.get("x-admin-key")
-  return provided === adminKey
+export async function OPTIONS(request: Request) {
+  return handleCorsPreflightResponse(request)
 }
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
-    return new Response("Unauthorized", { status: 401 })
+  const auth = validateAdminRequest(request)
+  if (!auth.authorized) {
+    return unauthorizedResponse(auth.error!, auth.corsHeaders)
   }
 
   const { searchParams } = new URL(request.url)
   const code = searchParams.get("code")
 
   if (!code) {
-    return Response.json(
-      { valid: false, error: "Missing ticket code" },
-      { status: 400 }
-    )
+    return new Response(JSON.stringify({ valid: false, error: "Missing ticket code" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", ...auth.corsHeaders },
+    })
   }
 
   try {
@@ -40,25 +39,31 @@ export async function GET(request: Request) {
     })
 
     if (!ticket) {
-      return Response.json({
+      return new Response(JSON.stringify({
         valid: false,
         error: "Ticket nicht gefunden",
         code,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...auth.corsHeaders },
       })
     }
 
     if (ticket.purchase.status !== "PAID") {
-      return Response.json({
+      return new Response(JSON.stringify({
         valid: false,
         error: "Ticket nicht bezahlt",
         code,
         status: ticket.purchase.status,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...auth.corsHeaders },
       })
     }
 
     const remainingQuantity = ticket.quantity - ticket.redeemedCount
 
-    return Response.json({
+    return new Response(JSON.stringify({
       valid: true,
       code: ticket.code,
       ticketId: ticket.id,
@@ -70,19 +75,23 @@ export async function GET(request: Request) {
       customerName: ticket.purchase.customerName,
       firstRedeemedAt: ticket.firstRedeemedAt,
       lastRedeemedAt: ticket.lastRedeemedAt,
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...auth.corsHeaders },
     })
   } catch (error) {
     console.error("Failed to validate ticket", error)
-    return Response.json(
-      { valid: false, error: "Validierung fehlgeschlagen" },
-      { status: 500 }
-    )
+    return new Response(JSON.stringify({ valid: false, error: "Validierung fehlgeschlagen" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...auth.corsHeaders },
+    })
   }
 }
 
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
-    return new Response("Unauthorized", { status: 401 })
+  const auth = validateAdminRequest(request)
+  if (!auth.authorized) {
+    return unauthorizedResponse(auth.error!, auth.corsHeaders)
   }
 
   try {
@@ -93,10 +102,10 @@ export async function POST(request: Request) {
     }
 
     if (!code) {
-      return Response.json(
-        { success: false, error: "Missing ticket code" },
-        { status: 400 }
-      )
+      return new Response(JSON.stringify({ success: false, error: "Missing ticket code" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...auth.corsHeaders },
+      })
     }
 
     const normalizedCode = code.toUpperCase().trim()
@@ -115,32 +124,41 @@ export async function POST(request: Request) {
     })
 
     if (!ticket) {
-      return Response.json({
+      return new Response(JSON.stringify({
         success: false,
         error: "Ticket nicht gefunden",
         code: normalizedCode,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...auth.corsHeaders },
       })
     }
 
     if (ticket.purchase.status !== "PAID") {
-      return Response.json({
+      return new Response(JSON.stringify({
         success: false,
         error: "Ticket nicht bezahlt",
         code: normalizedCode,
         status: ticket.purchase.status,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...auth.corsHeaders },
       })
     }
 
     const remainingQuantity = ticket.quantity - ticket.redeemedCount
 
     if (remainingQuantity <= 0) {
-      return Response.json({
+      return new Response(JSON.stringify({
         success: false,
         error: "Ticket bereits vollständig eingelöst",
         code: normalizedCode,
         quantity: ticket.quantity,
         redeemedCount: ticket.redeemedCount,
         remainingQuantity: 0,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...auth.corsHeaders },
       })
     }
 
@@ -159,7 +177,7 @@ export async function POST(request: Request) {
     const newRemainingQuantity =
       updatedTicket.quantity - updatedTicket.redeemedCount
 
-    return Response.json({
+    return new Response(JSON.stringify({
       success: true,
       code: updatedTicket.code,
       ticketId: updatedTicket.id,
@@ -171,12 +189,15 @@ export async function POST(request: Request) {
       customerEmail: ticket.purchase.customerEmail,
       customerName: ticket.purchase.customerName,
       timestamp: now.toISOString(),
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...auth.corsHeaders },
     })
   } catch (error) {
     console.error("Failed to redeem ticket", error)
-    return Response.json(
-      { success: false, error: "Einlösung fehlgeschlagen" },
-      { status: 500 }
-    )
+    return new Response(JSON.stringify({ success: false, error: "Einlösung fehlgeschlagen" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...auth.corsHeaders },
+    })
   }
 }
