@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client"
 import { randomBytes } from "crypto"
 import { prisma } from "./prisma"
 
@@ -29,22 +29,24 @@ export async function generateTicketCode(
 ): Promise<string> {
   const client = tx || prisma
 
-  // Use raw SQL to efficiently find the maximum sequential number
-  // This is much faster than fetching all tickets and processing in JavaScript
-  // Transaction clients support $queryRaw
-  type QueryResult = Array<{ max_num: bigint | null }>
-  const result = await (client as any).$queryRaw<QueryResult>`
-    SELECT MAX(
-      CAST(
-        SUBSTRING(code FROM '-(\\d{3})$') AS INTEGER
-      )
-    ) as max_num
-    FROM "Ticket"
-    WHERE code ~ '-\\d{3}$'
-  `
+  // Get all existing ticket codes
+  const allTickets = await client.ticket.findMany({
+    select: { code: true },
+  })
 
-  // Extract max number (will be null if no tickets exist or none match pattern)
-  const maxNumber = result && result[0] && result[0].max_num != null ? Number(result[0].max_num) : 0
+  // Find the highest sequential number from codes ending with -XXX pattern
+  let maxNumber = 0
+  const pattern = /-(\d{3})$/
+  
+  for (const ticket of allTickets) {
+    const match = ticket.code.match(pattern)
+    if (match) {
+      const num = parseInt(match[1], 10)
+      if (!isNaN(num) && num > maxNumber) {
+        maxNumber = num
+      }
+    }
+  }
 
   // Increment and format as three-digit string
   const nextNumber = maxNumber + 1

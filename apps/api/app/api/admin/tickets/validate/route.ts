@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { validateAdminRequest, unauthorizedResponse, handleCorsPreflightResponse } from "@/lib/auth"
+import { logger } from "@/lib/logger"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -80,7 +81,8 @@ export async function GET(request: Request) {
       headers: { "Content-Type": "application/json", ...auth.corsHeaders },
     })
   } catch (error) {
-    console.error("Failed to validate ticket", error)
+    logger.error("Failed to validate ticket", { error: String(error) })
+    await logger.flush()
     return new Response(JSON.stringify({ valid: false, error: "Validierung fehlgeschlagen" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...auth.corsHeaders },
@@ -194,7 +196,8 @@ export async function POST(request: Request) {
       headers: { "Content-Type": "application/json", ...auth.corsHeaders },
     })
   } catch (error) {
-    console.error("Failed to redeem ticket", error)
+    logger.error("Failed to redeem ticket", { error: String(error) })
+    await logger.flush()
     return new Response(JSON.stringify({ success: false, error: "Einlösung fehlgeschlagen" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...auth.corsHeaders },

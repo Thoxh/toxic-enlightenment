@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { sendTicketEmail } from "@/lib/send-ticket-email"
 import { validateAdminRequest, unauthorizedResponse, handleCorsPreflightResponse } from "@/lib/auth"
+import { logger } from "@/lib/logger"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -102,7 +103,8 @@ export async function POST(request: Request) {
       headers: { "Content-Type": "application/json", ...auth.corsHeaders },
     })
   } catch (error) {
-    console.error("Failed to send ticket email", error)
+    logger.error("Failed to send ticket email", { error: String(error) })
+    await logger.flush()
     return new Response(JSON.stringify({ success: false, error: "E-Mail-Versand fehlgeschlagen" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...auth.corsHeaders },

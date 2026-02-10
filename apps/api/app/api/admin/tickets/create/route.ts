@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { generateTicketCode } from "@/lib/tickets"
 import { validateAdminRequest, unauthorizedResponse, handleCorsPreflightResponse } from "@/lib/auth"
+import { logger } from "@/lib/logger"
 import { Prisma } from "@prisma/client"
 import crypto from "crypto"
 
@@ -91,7 +92,8 @@ export async function POST(request: Request) {
       { status: 201, headers: { "Content-Type": "application/json", ...auth.corsHeaders } }
     )
   } catch (error) {
-    console.error("Failed to create ticket", error)
+    logger.error("Failed to create ticket", { error: String(error) })
+    await logger.flush()
     return new Response(
       JSON.stringify({ error: "Failed to create ticket" }),
       { status: 500, headers: { "Content-Type": "application/json", ...auth.corsHeaders } }
