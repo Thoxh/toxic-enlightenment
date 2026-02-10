@@ -94,6 +94,7 @@ async function handleSuccessfulCheckout(session: Stripe.Checkout.Session) {
   const customerName = getCustomerName(session)
 
   // Create purchase and ticket in transaction
+  // Increased timeout to handle potential database locks
   const result = await prisma.$transaction(async (tx) => {
     const existingPurchase = await tx.purchase.findUnique({
       where: { stripeSessionId: session.id },
