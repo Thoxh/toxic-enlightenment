@@ -121,17 +121,17 @@ export function BarClient() {
   return (
     <div className="flex h-[calc(100vh-3rem)] overflow-hidden">
       {/* Main area */}
-      <div className="flex-1 overflow-auto p-8">
+      <div className="flex-1 overflow-auto p-6">
         {/* Stats card */}
-        <Card className="mb-6">
-          <CardContent className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="size-6 text-emerald-500" />
-              <span className="text-lg font-medium text-muted-foreground">
+        <Card size="sm" className="mb-5">
+          <CardContent className="flex items-center justify-between py-0">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="size-5 text-emerald-500" />
+              <span className="text-base font-medium text-muted-foreground">
                 Umsatz
               </span>
             </div>
-            <span className="text-3xl font-bold tabular-nums">
+            <span className="text-2xl font-bold tabular-nums">
               {stats ? formatPrice(stats.totalRevenue) : "–"}
             </span>
           </CardContent>
@@ -139,36 +139,36 @@ export function BarClient() {
 
         {selectedCategory === null ? (
           /* Category grid */
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {drinkCategories.map((cat) => {
               const style = categoryStyles[cat.name] ?? { icon: "🍸", bg: "bg-muted/10", border: "border-border/50", hover: "hover:bg-muted/20" }
               return (
                 <button
                   key={cat.name}
                   onClick={() => setSelectedCategory(cat.name)}
-                  className={`group flex flex-col items-center justify-center gap-5 rounded-2xl border p-12 text-card-foreground transition-all active:scale-[0.97] ${style.bg} ${style.border} ${style.hover}`}
+                  className={`group flex flex-col items-center justify-center gap-3 rounded-2xl border p-8 text-card-foreground transition-all active:scale-[0.97] ${style.bg} ${style.border} ${style.hover}`}
                 >
-                  <span className="text-7xl">{style.icon}</span>
-                  <span className="text-xl font-semibold">{cat.name}</span>
-                  <Badge variant="secondary" className="text-base px-4 h-7">{cat.drinks.length} Getränke</Badge>
+                  <span className="text-5xl">{style.icon}</span>
+                  <span className="text-lg font-semibold">{cat.name}</span>
+                  <Badge variant="secondary" className="text-sm px-3 h-6">{cat.drinks.length} Getränke</Badge>
                 </button>
               )
             })}
             <button
               onClick={() => addToCart({ name: "Pfand", price: 200, ingredients: [] }, "Pfand")}
-              className="group flex flex-col items-center justify-center gap-5 rounded-2xl border p-12 text-card-foreground transition-all active:scale-[0.97] bg-orange-500/8 border-orange-500/20 hover:bg-orange-500/15 hover:border-orange-500/35"
+              className="group flex flex-col items-center justify-center gap-3 rounded-2xl border p-8 text-card-foreground transition-all active:scale-[0.97] bg-orange-500/8 border-orange-500/20 hover:bg-orange-500/15 hover:border-orange-500/35"
             >
-              <span className="text-7xl">♻️</span>
-              <span className="text-xl font-semibold">Pfand</span>
-              <Badge variant="secondary" className="text-base px-4 h-7">2,00 €</Badge>
+              <span className="text-5xl">♻️</span>
+              <span className="text-lg font-semibold">Pfand</span>
+              <Badge variant="secondary" className="text-sm px-3 h-6">2,00 €</Badge>
             </button>
             <button
               onClick={() => addToCart({ name: "Pfandrückgabe", price: -200, ingredients: [] }, "Pfand")}
-              className="group flex flex-col items-center justify-center gap-5 rounded-2xl border p-12 text-card-foreground transition-all active:scale-[0.97] bg-teal-500/8 border-teal-500/20 hover:bg-teal-500/15 hover:border-teal-500/35"
+              className="group flex flex-col items-center justify-center gap-3 rounded-2xl border p-8 text-card-foreground transition-all active:scale-[0.97] bg-teal-500/8 border-teal-500/20 hover:bg-teal-500/15 hover:border-teal-500/35"
             >
-              <span className="text-7xl">🔄</span>
-              <span className="text-xl font-semibold">Pfandrückgabe</span>
-              <Badge variant="secondary" className="text-base px-4 h-7">-2,00 €</Badge>
+              <span className="text-5xl">🔄</span>
+              <span className="text-lg font-semibold">Pfandrückgabe</span>
+              <Badge variant="secondary" className="text-sm px-3 h-6">-2,00 €</Badge>
             </button>
           </div>
         ) : (
@@ -177,25 +177,25 @@ export function BarClient() {
             <Button
               variant="outline"
               onClick={() => setSelectedCategory(null)}
-              className="mb-5 text-xl h-14 px-6 gap-3"
+              className="mb-4 text-lg h-12 px-5 gap-2"
             >
-              <ArrowLeft className="size-7" data-icon="inline-start" />
+              <ArrowLeft className="size-6" data-icon="inline-start" />
               Zurück
             </Button>
 
-            <h2 className="mb-5 text-2xl font-semibold">{selectedCategory}</h2>
+            <h2 className="mb-4 text-xl font-semibold">{selectedCategory}</h2>
 
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               {activeDrinks.map((drink) => {
                 const dc = drinkColorMap[selectedCategory] ?? { bg: "bg-muted/10", border: "border-border/50", hover: "hover:bg-muted/20" }
                 return (
                   <button
                     key={drink.name}
                     onClick={() => addToCart(drink, selectedCategory)}
-                    className={`flex flex-col items-start justify-between gap-5 rounded-2xl border p-10 text-left text-card-foreground transition-all active:scale-[0.97] ${dc.bg} ${dc.border} ${dc.hover}`}
+                    className={`flex flex-col items-start justify-between gap-3 rounded-2xl border p-7 text-left text-card-foreground transition-all active:scale-[0.97] ${dc.bg} ${dc.border} ${dc.hover}`}
                   >
-                    <span className="text-4xl font-bold">{drink.name}</span>
-                    <span className="text-xl font-semibold tabular-nums text-foreground">
+                    <span className="text-2xl font-bold">{drink.name}</span>
+                    <span className="text-lg font-semibold tabular-nums text-foreground">
                       {formatPrice(drink.price)}
                     </span>
                   </button>
@@ -207,17 +207,17 @@ export function BarClient() {
       </div>
 
       {/* Cart sidebar */}
-      <div className="flex w-96 shrink-0 flex-col border-l border-border/50 bg-card/50">
-        <div className="flex items-center justify-between border-b border-border/50 px-6 py-5">
-          <h3 className="text-lg font-semibold">Warenkorb</h3>
+      <div className="flex w-80 shrink-0 flex-col border-l border-border/50 bg-card/50">
+        <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
+          <h3 className="text-base font-semibold">Warenkorb</h3>
           {cart.length > 0 && (
-            <Badge variant="secondary" className="text-base px-4 h-7">{cart.length}</Badge>
+            <Badge variant="secondary" className="text-sm px-3 h-6">{cart.length}</Badge>
           )}
         </div>
 
         <ScrollArea className="flex-1">
           {cart.length === 0 ? (
-            <div className="flex h-48 items-center justify-center text-lg text-muted-foreground">
+            <div className="flex h-40 items-center justify-center text-base text-muted-foreground">
               Keine Artikel
             </div>
           ) : (
@@ -226,19 +226,19 @@ export function BarClient() {
                 <button
                   key={item.id}
                   onClick={() => removeFromCart(item.id)}
-                  className="flex w-full items-center justify-between px-6 py-4 text-left transition-colors hover:bg-destructive/10 group"
+                  className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-destructive/10 group"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-lg font-medium">{item.name}</p>
-                    <p className="text-base text-muted-foreground">
+                    <p className="truncate text-base font-medium">{item.name}</p>
+                    <p className="text-sm text-muted-foreground">
                       {item.category}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0 ml-3">
-                    <span className="text-lg tabular-nums font-medium">
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    <span className="text-base tabular-nums font-medium">
                       {formatPrice(item.price)}
                     </span>
-                    <Trash2 className="size-5 opacity-0 group-hover:opacity-100 transition-opacity text-destructive" />
+                    <Trash2 className="size-4 opacity-0 group-hover:opacity-100 transition-opacity text-destructive" />
                   </div>
                 </button>
               ))}
@@ -246,20 +246,20 @@ export function BarClient() {
           )}
         </ScrollArea>
 
-        <div className="border-t border-border/50 p-6 space-y-5">
+        <div className="border-t border-border/50 p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-lg text-muted-foreground">Gesamt</span>
-            <span className="text-2xl font-bold tabular-nums">
+            <span className="text-base text-muted-foreground">Gesamt</span>
+            <span className="text-xl font-bold tabular-nums">
               {formatPrice(cartTotal)}
             </span>
           </div>
 
           <Button
-            className="w-full h-16 text-xl"
+            className="w-full h-14 text-lg"
             disabled={cart.length === 0 || isSubmitting}
             onClick={submitOrder}
           >
-            <Receipt className="size-7" data-icon="inline-start" />
+            <Receipt className="size-6" data-icon="inline-start" />
             {isSubmitting ? "Wird quittiert..." : "Quittieren"}
           </Button>
         </div>
