@@ -19,15 +19,29 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await prisma.barOrder.aggregate({
-      _sum: { total: true },
-      _count: true,
-    })
+    const [aggregation, productStats] = await Promise.all([
+      prisma.barOrder.aggregate({
+        _sum: { total: true },
+        _count: true,
+      }),
+      prisma.barOrderItem.groupBy({
+        by: ["name", "category"],
+        _count: { id: true },
+        _sum: { price: true },
+        orderBy: { _count: { id: "desc" } },
+      }),
+    ])
 
     return new Response(
       JSON.stringify({
-        totalRevenue: result._sum.total ?? 0,
-        totalOrders: result._count,
+        totalRevenue: aggregation._sum.total ?? 0,
+        totalOrders: aggregation._count,
+        products: productStats.map((p) => ({
+          name: p.name,
+          category: p.category,
+          count: p._count.id,
+          revenue: p._sum.price ?? 0,
+        })),
       }),
       {
         status: 200,

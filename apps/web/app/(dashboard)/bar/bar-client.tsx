@@ -1,14 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { ArrowLeft, Trash2, Receipt, TrendingUp } from "lucide-react"
+import { useState } from "react"
+import { ArrowLeft, Trash2, Receipt } from "lucide-react"
 import { toast } from "sonner"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
 import { Button } from "@workspace/ui/components/button"
 import { Badge } from "@workspace/ui/components/badge"
 import { ScrollArea } from "@workspace/ui/components/scroll-area"
@@ -29,26 +23,6 @@ export function BarClient() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [cart, setCart] = useState<CartItem[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [stats, setStats] = useState<{
-    totalRevenue: number
-    totalOrders: number
-  } | null>(null)
-
-  const fetchStats = useCallback(async () => {
-    try {
-      const res = await fetch("/api/bar/stats")
-      if (res.ok) {
-        const data = await res.json()
-        setStats(data)
-      }
-    } catch {
-      // silent
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchStats()
-  }, [fetchStats])
 
   function addToCart(drink: Drink, categoryName: string) {
     setCart((prev) => [
@@ -86,7 +60,6 @@ export function BarClient() {
       if (res.ok) {
         toast.success("Bestellung quittiert")
         setCart([])
-        fetchStats()
       } else {
         toast.error("Fehler beim Quittieren")
       }
@@ -122,21 +95,6 @@ export function BarClient() {
     <div className="flex h-[calc(100vh-3rem)] overflow-hidden">
       {/* Main area */}
       <div className="flex-1 overflow-auto p-6">
-        {/* Stats card */}
-        <Card size="sm" className="mb-5">
-          <CardContent className="flex items-center justify-between py-0">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="size-5 text-emerald-500" />
-              <span className="text-base font-medium text-muted-foreground">
-                Umsatz
-              </span>
-            </div>
-            <span className="text-2xl font-bold tabular-nums">
-              {stats ? formatPrice(stats.totalRevenue) : "–"}
-            </span>
-          </CardContent>
-        </Card>
-
         {selectedCategory === null ? (
           /* Category grid */
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
