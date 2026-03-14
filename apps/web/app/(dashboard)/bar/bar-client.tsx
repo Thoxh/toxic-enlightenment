@@ -162,6 +162,14 @@ export function BarClient() {
               <span className="text-xl font-semibold">Pfand</span>
               <Badge variant="secondary" className="text-base px-4 h-7">2,00 €</Badge>
             </button>
+            <button
+              onClick={() => addToCart({ name: "Pfandrückgabe", price: -200, ingredients: [] }, "Pfand")}
+              className="group flex flex-col items-center justify-center gap-5 rounded-2xl border p-12 text-card-foreground transition-all active:scale-[0.97] bg-teal-500/8 border-teal-500/20 hover:bg-teal-500/15 hover:border-teal-500/35"
+            >
+              <span className="text-7xl">🔄</span>
+              <span className="text-xl font-semibold">Pfandrückgabe</span>
+              <Badge variant="secondary" className="text-base px-4 h-7">-2,00 €</Badge>
+            </button>
           </div>
         ) : (
           /* Drink grid */
