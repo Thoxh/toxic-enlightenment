@@ -59,12 +59,12 @@ export const drinkCategories: DrinkCategory[] = [
     drinks: [
       {
         name: "Berliner Kindl",
-        price: 450,
+        price: 400,
         ingredients: [{ name: "Berliner Kindl", amount: "1", unit: "Flasche" }],
       },
       {
         name: "Corona",
-        price: 400,
+        price: 450,
         ingredients: [
           { name: "Corona", amount: "1", unit: "Flasche" },
           { name: "Limette", amount: "1", unit: "Stück" },
