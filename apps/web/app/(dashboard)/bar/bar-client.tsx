@@ -81,6 +81,7 @@ export function BarClient() {
     Cocktails: { icon: "🍹", bg: "bg-rose-500/8", border: "border-rose-500/20", hover: "hover:bg-rose-500/15 hover:border-rose-500/35" },
     "Long Drinks": { icon: "🥃", bg: "bg-violet-500/8", border: "border-violet-500/20", hover: "hover:bg-violet-500/15 hover:border-violet-500/35" },
     Shots: { icon: "🥂", bg: "bg-emerald-500/8", border: "border-emerald-500/20", hover: "hover:bg-emerald-500/15 hover:border-emerald-500/35" },
+    Spezielles: { icon: "⭐", bg: "bg-yellow-500/8", border: "border-yellow-500/20", hover: "hover:bg-yellow-500/15 hover:border-yellow-500/35" },
   }
 
   const drinkColorMap: Record<string, { bg: string; border: string; hover: string }> = {
@@ -89,6 +90,7 @@ export function BarClient() {
     Cocktails: { bg: "bg-rose-500/6", border: "border-rose-500/15", hover: "hover:bg-rose-500/12 hover:border-rose-500/30" },
     "Long Drinks": { bg: "bg-violet-500/6", border: "border-violet-500/15", hover: "hover:bg-violet-500/12 hover:border-violet-500/30" },
     Shots: { bg: "bg-emerald-500/6", border: "border-emerald-500/15", hover: "hover:bg-emerald-500/12 hover:border-emerald-500/30" },
+    Spezielles: { bg: "bg-yellow-500/6", border: "border-yellow-500/15", hover: "hover:bg-yellow-500/12 hover:border-yellow-500/30" },
   }
 
   return (

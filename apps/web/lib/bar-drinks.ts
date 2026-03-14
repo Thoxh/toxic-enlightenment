@@ -224,4 +224,19 @@ export const drinkCategories: DrinkCategory[] = [
       },
     ],
   },
+  {
+    name: "Spezielles",
+    drinks: [
+      {
+        name: "Bierpongset",
+        price: 2000,
+        ingredients: [],
+      },
+      {
+        name: "Pommes",
+        price: 250,
+        ingredients: [],
+      },
+    ],
+  },
 ]
